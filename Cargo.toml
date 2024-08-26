@@ -1,0 +1,9 @@
+[package]
+name = "coding-challenge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+types = { package = "air-types", version = "0.1.0" }
+macros = { package = "air-macros", version = "0.1.0" }
+air = { package = "tnj-air", version = "0.1.0" }
