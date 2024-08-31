@@ -1,7 +1,7 @@
 use air::arch::Arch;
 use air::instructions::builder::InstructionBuilder;
-use air::instructions::{Blob, Reg, RegData};
-use types::I64;
+use air::instructions::{Blob, BlockParamData, Reg, RegData};
+use types::{I64, VOID};
 
 enum AArch64Instruction {
     Add { dst: Reg, src: Reg, imm: i64 },  // ADD Xd, Xn, #imm
@@ -17,21 +17,32 @@ fn translate_aarch64_to_ir(builder: &mut InstructionBuilder, inst: AArch64Instru
     match inst {
         AArch64Instruction::Add { dst, src, imm } => {
             // TODO: Translate ADD instruction to IR
+            let imm0 = &builder.iconst(imm);
+            let v0 = &builder.add(src, *imm0, I64);
+            builder.write_reg(*v0, dst, I64);
         }
         AArch64Instruction::Sub { dst, src, imm } => {
             // TODO: Translate SUB instruction to IR
+            let imm0 = &builder.iconst(-imm);
+            let v0 = &builder.add(src, *imm0, I64);
+            builder.write_reg(*v0, dst, I64);
         }
         AArch64Instruction::Mov { dst, imm } => {
             // TODO: Translate MOV instruction to IR
+            let imm0 = &builder.iconst(imm);
+            builder.write_reg(*imm0, dst, I64);
         }
         AArch64Instruction::B { label } => {
             // TODO: Translate B instruction to IR
         }
         AArch64Instruction::Cbz { src, label } => {
             // TODO: Translate CBZ instruction to IR
+            let val = builder.read_reg(src, I64);
         }
         AArch64Instruction::Label { name } => {
             // TODO: Translate label to IR
+            let block0 = builder.create_block(name, vec![]);
+            builder.jump(block0, vec![]);
         }
     }
 }
