@@ -41,12 +41,12 @@ fn translate_aarch64_to_ir(state: &mut State, builder: &mut InstructionBuilder, 
         }
         AArch64Instruction::B { label } => {
             // TODO: Translate B instruction to IR
-            let block0 = state.blocks[&label];
+            let block0 = get_and_add_block(builder, state, &label);
             builder.jump(block0, vec![]);
         }
         AArch64Instruction::Cbz { src, label } => {
             // TODO: Translate CBZ instruction to IR
-            let block0 = state.blocks[&label];
+            let block0 = get_and_add_block(builder, state, &label);
             let block1 = builder.current_block();
             let val0 = builder.read_reg(src, I64);
             let val1 = builder.iconst(0);
@@ -59,6 +59,18 @@ fn translate_aarch64_to_ir(state: &mut State, builder: &mut InstructionBuilder, 
             state.blocks.insert(name, block0);
             builder.jump(block0, vec![]);
         }
+    }
+}
+
+// Gets a block by name from the state and creates block if block doesnt exist yet
+fn get_and_add_block(builder: &mut InstructionBuilder, state: &mut State, label: &String) -> BasicBlock {
+    if !state.blocks.contains_key(label) {
+        let block0 = builder.create_block::<Vec<BlockParamData>, BlockParamData>(label, vec![]);
+        state.blocks.insert(label.clone(), block0);
+        block0
+    }
+    else {
+        state.blocks[label]
     }
 }
 
