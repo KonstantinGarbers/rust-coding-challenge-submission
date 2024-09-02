@@ -86,7 +86,7 @@ fn main() {
         AArch64Instruction::Mov { dst: x0, imm: 10 },
         AArch64Instruction::Mov { dst: x1, imm: 1 },
         AArch64Instruction::Mov { dst: x2, imm: 0 },
-        AArch64Instruction::B { label: "start".to_string() },
+        AArch64Instruction::Label { name: "start".to_string() },
         AArch64Instruction::Add { dst: x3, src: x2, imm: 1 },
         AArch64Instruction::Sub { dst: x0, src: x0, imm: 1 },
         AArch64Instruction::Cbz { src: x0, label: "end".to_string() },
