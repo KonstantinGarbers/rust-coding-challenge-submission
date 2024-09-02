@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+use std::vec;
+
 use air::arch::Arch;
-use air::instructions::builder::InstructionBuilder;
-use air::instructions::{Blob, BlockParamData, Reg, RegData};
+use air::instructions::builder::{self, InstructionBuilder};
+use air::instructions::{BasicBlock, Blob, BlockParamData, CmpTy, Reg, RegData};
 use types::{I64, VOID};
 
 enum AArch64Instruction {
@@ -12,8 +15,12 @@ enum AArch64Instruction {
     Label { name: String },                // label:
 }
 
+struct State {
+    blocks: HashMap<String, BasicBlock>
+}
+
 // Implement the translation function that converts an AArch64 instruction to the SSA-based IR.
-fn translate_aarch64_to_ir(builder: &mut InstructionBuilder, inst: AArch64Instruction) {
+fn translate_aarch64_to_ir(state: &mut State, builder: &mut InstructionBuilder, inst: AArch64Instruction) {
     match inst {
         AArch64Instruction::Add { dst, src, imm } => {
             // TODO: Translate ADD instruction to IR
@@ -34,14 +41,22 @@ fn translate_aarch64_to_ir(builder: &mut InstructionBuilder, inst: AArch64Instru
         }
         AArch64Instruction::B { label } => {
             // TODO: Translate B instruction to IR
+            let block0 = state.blocks[&label];
+            builder.jump(block0, vec![]);
         }
         AArch64Instruction::Cbz { src, label } => {
             // TODO: Translate CBZ instruction to IR
-            let val = builder.read_reg(src, I64);
+            let block0 = state.blocks[&label];
+            let block1 = builder.current_block();
+            let val0 = builder.read_reg(src, I64);
+            let val1 = builder.iconst(0);
+            let cond0 = builder.icmp(CmpTy::Eq, val0, val1, I64);
+            builder.jumpif(cond0, block0, vec![], block1, vec![]);
         }
         AArch64Instruction::Label { name } => {
             // TODO: Translate label to IR
-            let block0 = builder.create_block(name, vec![]);
+            let block0 = builder.create_block::<Vec<BlockParamData>, BlockParamData>(&name, vec![]);
+            state.blocks.insert(name, block0);
             builder.jump(block0, vec![]);
         }
     }
@@ -61,6 +76,10 @@ fn main() {
     let x3 = Reg(3);
 
     let mut builder = InstructionBuilder::new(&mut blob);
+    let mut state = State {
+        blocks: HashMap::new(),
+    };
+    
 
     // the following should be a loop decrementing a counter and branching to the start of the loop
     let instructions = vec![
@@ -76,6 +95,6 @@ fn main() {
     ];
 
     for inst in instructions {
-        translate_aarch64_to_ir(&mut builder, inst);
+        translate_aarch64_to_ir(&mut state, &mut builder, inst);
     }
 }
